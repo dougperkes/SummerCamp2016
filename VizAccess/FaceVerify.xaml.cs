@@ -33,6 +33,7 @@ namespace VizAccess
 
         public PhotoList Photos;
         public string FullResult;
+        public string faceName;
 
         string cameraPic;
         //subscription key
@@ -123,6 +124,7 @@ namespace VizAccess
                         // Get top 1 among all candidates returned
                         var candidateId = identifyResult.Candidates[0].PersonId;
                         var person = await faceServiceClient.GetPersonAsync(personGroupId, candidateId);
+                        faceName = person.Name;
                         Log(string.Format("Identified as {0} Acess Granted to enter", person.Name));
                     }
                 }
@@ -213,7 +215,7 @@ namespace VizAccess
                         var glasses = attributes.Glasses.ToString();
                         if (glasses != "NoGlasses") { hasGlases = attributes.Glasses.ToString(); }
 
-                        Log(String.Format("{0} is {1} years old, {0}, {2}, {3}, {4}, {6}, and is {5} ", heshe,age,hasBeard,hasMustache,hasSideburns,smiling,hasGlases));
+                        Log(String.Format("{7}'s attributes: {0} is {1} years old, {0}, {2}, {3}, {4}, {6}, and is {5} ", heshe,age,hasBeard,hasMustache,hasSideburns,smiling,hasGlases, faceName));
 
                         //use information to calculate other information
 
