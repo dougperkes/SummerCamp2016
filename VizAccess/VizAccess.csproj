@@ -97,11 +97,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="FaceId.xaml.cs">
+      <DependentUpon>FaceId.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Faceold.cs" />
     <Compile Include="IsolatedStorageHelper.cs" />
     <Compile Include="FaceVerify.xaml.cs">
       <DependentUpon>FaceVerify.xaml</DependentUpon>
     </Compile>
+    <Page Include="FaceId.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="FaceVerify.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -151,6 +158,9 @@
   <ItemGroup>
     <Resource Include="Assets\daniel-egan.jpg" />
     <Resource Include="Assets\default.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\VizAccessLogo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />

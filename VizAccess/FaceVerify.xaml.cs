@@ -257,6 +257,12 @@ namespace VizAccess
                 return 300;
             }
         }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            var newForm = new FaceId();
+            newForm.Show();
+        }
     }
 
 
