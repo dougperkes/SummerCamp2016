@@ -6,7 +6,7 @@
 *.user
 *.userosscache
 *.sln.docstates
-.\VizAccess\Assets\picture.bmp
+VizAccess\Assets\picture.bmp
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

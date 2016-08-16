@@ -501,7 +501,7 @@
             <Button Grid.Column="1" Grid.Row="3" Content="Verify" Background="#FF20EA20" Foreground="Black" BorderBrush="Transparent" Click="Verification_Click" Margin="33.6,151.8,24.2,120.2" FontFamily="Palatino Linotype" FontSize="40" Height="Auto"/>
             <Wpf:WebCameraControl  x:Name="webCameraControl" Grid.Column="1" HorizontalAlignment="Left" Margin="210.6,1,0,0" VerticalAlignment="Top" Height="166" Grid.Row="2" Width="187" Grid.RowSpan="2"/>
             <ComboBox x:Name="comboBox" Grid.Column="1" HorizontalAlignment="Left" Margin="398,6,0,0" Grid.Row="3" VerticalAlignment="Top" Width="187" Visibility="Hidden"/>
-            <Button x:Name="button" Content="Manage" HorizontalAlignment="Left" Margin="91,0,-161,-6" Grid.Row="5" VerticalAlignment="Top" Width="75" Grid.Column="2" Grid.RowSpan="2" Click="button_Click"/>
+            <Button x:Name="button" Content="Manage" HorizontalAlignment="Left" Margin="90.8,0.4,-161,-6.4" Grid.Row="5" Width="75" Grid.Column="2" Grid.RowSpan="2"  Height="Auto"/>
         </Grid>
     </Viewbox>
 </Window>
