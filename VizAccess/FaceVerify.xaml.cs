@@ -91,12 +91,13 @@ namespace VizAccess
             cameraPic = imagePath + "picture.bmp";
             webCameraControl.GetCurrentImage().Save(cameraPic);
 
-            IdentifyUserInGroup(cameraPic);
+            await IdentifyUserInGroup(cameraPic);
+            await CheckForFace(cameraPic);
 
 
         }
 
-        private async void IdentifyUserInGroup(string imageToVerify)
+        private async Task IdentifyUserInGroup(string imageToVerify)
         {
             string testImageFile = imageToVerify;
 
@@ -114,14 +115,14 @@ namespace VizAccess
                     Console.WriteLine("Result of face: {0}", identifyResult.FaceId);
                     if (identifyResult.Candidates.Length == 0)
                     {
-                        Log(string.Format("No one identified"));
+                        Log(string.Format("Not Authorized to enter"));
                     }
                     else
                     {
                         // Get top 1 among all candidates returned
                         var candidateId = identifyResult.Candidates[0].PersonId;
                         var person = await faceServiceClient.GetPersonAsync(personGroupId, candidateId);
-                        Log(string.Format("Identified as {0}", person.Name));
+                        Log(string.Format("Identified as {0} Acess Granted to enter", person.Name));
                     }
                 }
             }
@@ -162,7 +163,7 @@ namespace VizAccess
                     }
 
                     //Write to screen
-                    Log(String.Format("Response: Success. Detected {0} face(s) in {1}", faces.Length, pickedImagePath));
+                    //Log(String.Format("Response: Success. Detected {0} face(s) in {1}", faces.Length, pickedImagePath));
 
                     // calc rectange for face
                     foreach (Microsoft.ProjectOxford.Face.Contract.Face face in faces)
@@ -182,18 +183,37 @@ namespace VizAccess
                         double rightPupilX = landmarks.PupilRight.X;
                         double rightPupilY = landmarks.PupilRight.Y;
 
-
+                        string heshe;
+                        string smiling = "is smiling";
+                        string hasBeard = "has a beard";
+                        string hasMustache = "has a mustache";
+                        string hasSideburns = "has sideburns";
+                        string hasGlases = "has no glasses";
                         var id = face.FaceId;
                         var attributes = face.FaceAttributes;
                         var age = attributes.Age;
                         var gender = attributes.Gender;
+                        if (gender == "male"){ heshe = "He"; } else { heshe = "She"; }
+
                         var smile = attributes.Smile;
+                        if (smile <= .5) { smiling = "is not smiling"; }
+
                         var facialHair = attributes.FacialHair;
+                        var beard = attributes.FacialHair.Beard;
+                        if (beard <= .5) { hasBeard = "does not have a beard"; } 
+                        var mustache = attributes.FacialHair.Moustache;
+                        if (mustache <= .5) { hasMustache = "does not have a mustache"; } 
+                        var sideburns = attributes.FacialHair.Sideburns;
+                        if (sideburns <= .5) { hasSideburns = "does not have sideburns"; } 
+
                         var headPose = attributes.HeadPose;
-                        var glasses = attributes.Glasses;
+                        var glasses = attributes.Glasses.ToString();
+                        if (glasses != "NoGlasses") { hasGlases = attributes.Glasses.ToString(); }
+
+                        Log(String.Format("{0} is {1} years old, {0}, {2}, {3}, {4}, {6}, and is {5} ", heshe,age,hasBeard,hasMustache,hasSideburns,smiling,hasGlases));
 
                         //use information to calculate other information
-                        
+
 
                         var upperLipBottom = landmarks.UpperLipBottom;
                         var underLipTop = landmarks.UnderLipTop;
@@ -264,8 +284,9 @@ namespace VizAccess
             }
             else
             {
-                string timeStr = DateTime.Now.ToString("HH:mm:ss.ffffff");
-                string messaage = "[" + timeStr + "]: " + logMessage + "\n";
+                //string timeStr = DateTime.Now.ToString("HH:mm:ss.ffffff");
+                //string messaage = "[" + timeStr + "]: " + logMessage + "\n";
+                string messaage = logMessage + "\n";
                 _logTextBox.Text += messaage;
             }
             _logTextBox.ScrollToEnd();
