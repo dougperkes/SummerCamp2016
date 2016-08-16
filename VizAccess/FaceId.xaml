@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="FaceId" Height="600" Width="600">
     <Grid>
-        <Button x:Name="button" Content="Get Face IDs" HorizontalAlignment="Left" Margin="16,10,0,0" VerticalAlignment="Top" Width="75" Click="button_Click"/>
+        <Button x:Name="button" Content="Train the Group" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="575" Click="button_Click" Height="26"/>
         <TextBox x:Name="_logTextBox" HorizontalAlignment="Left" Height="395" Margin="21,41,0,0" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" IsReadOnly="True" VerticalAlignment="Top" Width="564" BorderBrush="White"/>
 
     </Grid>
