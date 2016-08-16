@@ -142,23 +142,12 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Photos\01.png" />
-    <Resource Include="Photos\02.png" />
-    <Resource Include="Photos\03.png" />
-    <Resource Include="Photos\04.png" />
-    <Resource Include="Photos\05.png" />
-    <Resource Include="Photos\06.png" />
-    <Resource Include="Photos\07.png" />
-    <Resource Include="Photos\08.png" />
-    <Resource Include="Photos\09.png" />
-    <Resource Include="Photos\10.png" />
-    <Resource Include="Photos\11.png" />
-    <Resource Include="Photos\12.png" />
-    <Resource Include="Photos\13.png" />
-    <Resource Include="Photos\14.png" />
-    <Resource Include="Photos\15.png" />
+    <Resource Include="Photos\Ahmed.jpg" />
+    <Resource Include="Photos\Daniel.jpg" />
+    <Resource Include="Photos\Doug.jpg" />
+    <Resource Include="Photos\Kevin.jpg" />
+    <Resource Include="Photos\Thomas.jpg" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Resource Include="Assets\daniel-egan.jpg" />
     <Resource Include="Assets\default.jpg" />
