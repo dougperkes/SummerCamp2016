@@ -20,6 +20,7 @@ using Microsoft.ProjectOxford.Face;
 using Microsoft.ProjectOxford.Face.Controls;
 using System.ComponentModel;
 using Microsoft.ProjectOxford.Face.Contract;
+using Newtonsoft.Json;
 
 namespace VizAccess
 {
@@ -171,6 +172,8 @@ namespace VizAccess
                         // Add faces to face collection
                         FoundFaceCollection.Add(face);
 
+                        string queueMessage = JsonConvert.SerializeObject(face);
+                        AzureUtil.SendMessage(queueMessage);
 
                         var rect = face.FaceRectangle;
                         var landmarks = face.FaceLandmarks;
@@ -303,6 +306,12 @@ namespace VizAccess
             {
                 return 300;
             }
+        }
+
+        private void manageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new FaceId();
+            dlg.ShowDialog();
         }
     }
 
