@@ -34,7 +34,6 @@ namespace VizAccess
         public string FullResult;
 
         string cameraPic;
-        string filePic;
         //subscription key
         string subscriptionKey = "c3c69602aecd442987f68ba9447a7be0";
 
@@ -90,17 +89,42 @@ namespace VizAccess
             string root = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var imagePath = System.IO.Path.Combine(root, "../../Assets/");
             cameraPic = imagePath + "picture.bmp";
-            filePic = imagePath + "daniel-egan.jpg";
             webCameraControl.GetCurrentImage().Save(cameraPic);
 
-            await CheckForFace(cameraPic);
-            Log(String.Format("Request: Detecting in {0}", cameraPic));
-            await CheckForFace(filePic);
-            Log(String.Format("Request: Detecting in {0}", filePic));
+            IdentifyUserInGroup(cameraPic);
 
-            var faceId1 = FoundFaceCollection[0].FaceId;
-            var faceId2 = FoundFaceCollection[1].FaceId;
-            await CompareFaces(faceId1, faceId2);
+
+        }
+
+        private async void IdentifyUserInGroup(string imageToVerify)
+        {
+            string testImageFile = imageToVerify;
+
+            using (Stream s = File.OpenRead(testImageFile))
+            {
+                string personGroupId = "31bb6099-d409-4bdc-b35f-8ab9bf011668";
+                //initialize service
+                var faceServiceClient = new FaceServiceClient(subscriptionKey);
+                var faces = await faceServiceClient.DetectAsync(s);
+                var faceIds = faces.Select(face => face.FaceId).ToArray();
+
+                var results = await faceServiceClient.IdentifyAsync(personGroupId, faceIds);
+                foreach (var identifyResult in results)
+                {
+                    Console.WriteLine("Result of face: {0}", identifyResult.FaceId);
+                    if (identifyResult.Candidates.Length == 0)
+                    {
+                        Log(string.Format("No one identified"));
+                    }
+                    else
+                    {
+                        // Get top 1 among all candidates returned
+                        var candidateId = identifyResult.Candidates[0].PersonId;
+                        var person = await faceServiceClient.GetPersonAsync(personGroupId, candidateId);
+                        Log(string.Format("Identified as {0}", person.Name));
+                    }
+                }
+            }
 
 
         }
@@ -114,6 +138,8 @@ namespace VizAccess
                 {
                     //initialize service
                     var faceServiceClient = new FaceServiceClient(subscriptionKey);
+
+                   
 
                     var requiredFaceAttributes = new FaceAttributeType[] {
                 FaceAttributeType.Age,
@@ -256,12 +282,6 @@ namespace VizAccess
             {
                 return 300;
             }
-        }
-
-        private void button_Click(object sender, RoutedEventArgs e)
-        {
-            var newForm = new FaceId();
-            newForm.Show();
         }
     }
 
