@@ -1,0 +1,10 @@
+﻿<Application x:Class="VizAccess.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:VizAccess"
+             StartupUri="FaceVerify.xaml">
+    <Application.Resources>
+        <ObjectDataProvider x:Name="PhotosODP" x:Key="Photos" ObjectType="{x:Type local:PhotoList}" />
+
+    </Application.Resources>
+</Application>
