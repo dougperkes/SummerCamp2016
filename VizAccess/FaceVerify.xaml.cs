@@ -27,13 +27,28 @@ namespace VizAccess
     /// <summary>
     ///     Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class FaceVerify : Window
+    public partial class FaceVerify : Window, INotifyPropertyChanged        
     {
-
 
         public PhotoList Photos;
         public string FullResult;
         public string faceName;
+        private string imagePath = "c:\\projects\\picture.bmp";
+        FaceRectangle faceRects;
+
+
+
+        public string ImagePath
+        {
+            get { return imagePath; }
+            set {
+                imagePath = value;
+                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(ImagePath)));
+            }
+        }   
+
+
+
 
         string cameraPic;
         //subscription key
@@ -44,11 +59,15 @@ namespace VizAccess
 
             InitializeComponent();
             InitializeComboBox();
-   
+            this.DataContext = this;
+
 
         }
 
         private ObservableCollection<Face> _foundFaceCollection = new ObservableCollection<Face>();
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public ObservableCollection<Face> FoundFaceCollection
         {
             get
@@ -90,13 +109,82 @@ namespace VizAccess
         {
             string root = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var imagePath = System.IO.Path.Combine(root, "../../Assets/");
-            cameraPic = imagePath + "picture.bmp";
+            //cameraPic = imagePath + "picture.bmp";
+            cameraPic = $"{imagePath}Picture-{Guid.NewGuid()}.bmp";
+
             webCameraControl.GetCurrentImage().Save(cameraPic);
 
+            //await Task.Delay(5000);
+            // when the line above runs, it saves the picture.bmp
+            await MarkFaces(cameraPic);
             await IdentifyUserInGroup(cameraPic);
             await CheckForFace(cameraPic);
+            
+
+            //ImagePath = cameraPic;
+            // shotImage.Source = new BitmapImage(new Uri("c:\\projects\\picture.bmp", UriKind.Relative));
+
+        }
+
+        private async Task MarkFaces(string pickedImagePath)
+        {
+
+            Uri fileUri = new Uri(pickedImagePath);
+            BitmapImage bitmapSource = new BitmapImage();
+
+            bitmapSource.BeginInit();
+            bitmapSource.CacheOption = BitmapCacheOption.None;
+            bitmapSource.UriSource = fileUri;
+            bitmapSource.EndInit();
+            using (Stream imageFileStream = File.OpenRead(pickedImagePath))
+            {
+                //initialize service
+                var fileStream = File.OpenRead(pickedImagePath);
+            var faceServiceClient = new FaceServiceClient(subscriptionKey);
+            var faces = await faceServiceClient.DetectAsync(imageFileStream);
+            var faceRects = faces.Select(face => face.FaceRectangle);
+            var faces2 = faceRects.ToArray();
 
 
+
+
+
+            if (faces2.Length > 0)
+            {
+                DrawingVisual visual = new DrawingVisual();
+                DrawingContext drawingContext = visual.RenderOpen();
+                drawingContext.DrawImage(bitmapSource,
+                    new Rect(0, 0, bitmapSource.Width, bitmapSource.Height));
+                double dpi = bitmapSource.DpiX;
+                double resizeFactor = 96 / dpi;
+
+                foreach (var faceRect in faces2)
+                {
+                    drawingContext.DrawRectangle(
+                        Brushes.Transparent,
+                        new Pen(Brushes.Red, 2),
+                        new Rect(
+                            faceRect.Left * resizeFactor,
+                            faceRect.Top * resizeFactor,
+                            faceRect.Width * resizeFactor,
+                            faceRect.Height * resizeFactor
+                            )
+                    );
+                }
+
+                drawingContext.Close();
+                RenderTargetBitmap faceWithRectBitmap = new RenderTargetBitmap(
+                    (int)(bitmapSource.PixelWidth * resizeFactor),
+                    (int)(bitmapSource.PixelHeight * resizeFactor),
+                    96,
+                    96,
+                    PixelFormats.Pbgra32);
+
+                faceWithRectBitmap.Render(visual);
+                shotImage.Source = faceWithRectBitmap;
+            }
+
+        }
         }
 
         private async Task IdentifyUserInGroup(string imageToVerify)
@@ -156,7 +244,8 @@ namespace VizAccess
 
                     //detect faces ( could be more than one ) 
                     var faces = await faceServiceClient.DetectAsync(fileStream, returnFaceId: true, returnFaceLandmarks: true, returnFaceAttributes: requiredFaceAttributes);
-
+                    
+                    
                     // If it does not find any faces
                     // right now program crashes if no faces
                     if (faces == null)
@@ -167,7 +256,7 @@ namespace VizAccess
 
                     //Write to screen
                     //Log(String.Format("Response: Success. Detected {0} face(s) in {1}", faces.Length, pickedImagePath));
-
+                  
                     // calc rectange for face
                     foreach (Microsoft.ProjectOxford.Face.Contract.Face face in faces)
                     {
@@ -178,6 +267,7 @@ namespace VizAccess
                         AzureUtil.SendMessage(queueMessage);
 
                         var rect = face.FaceRectangle;
+                        
                         var landmarks = face.FaceLandmarks;
                         double noseX = landmarks.NoseTip.X;
                         double noseY = landmarks.NoseTip.Y;
@@ -215,7 +305,7 @@ namespace VizAccess
                         var glasses = attributes.Glasses.ToString();
                         if (glasses != "NoGlasses") { hasGlases = attributes.Glasses.ToString(); }
 
-                        Log(String.Format("{7}'s attributes: {0} is {1} years old, {0}, {2}, {3}, {4}, {6}, and is {5} ", heshe,age,hasBeard,hasMustache,hasSideburns,smiling,hasGlases, faceName));
+                        Log(String.Format("{7}'s attributes: z{0} is {1} years old, {0}, {2}, {3}, {4}, {6}, and is {5} ", heshe,age,hasBeard,hasMustache,hasSideburns,smiling,hasGlases, faceName));
 
                         //use information to calculate other information
 

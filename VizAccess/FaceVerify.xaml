@@ -458,18 +458,20 @@
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
+                <ColumnDefinition Width="0*"/>
 
             </Grid.ColumnDefinitions>
 
 
-            <Image Source="/Assets/VizAccessLogo.png" Height="76" Margin="948,-15,-246,614.429" Grid.RowSpan="2" />
+            <Image Source="/Assets/VizAccessLogo.png" Margin="262,7.2,440,567" Grid.Row="1" />
 
 
-            <TextBox x:Name="_logTextBox" HorizontalAlignment="Center" Height="154" Margin="0,373.571,51,0" Grid.Row="2" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" IsReadOnly="True" VerticalAlignment="Top" Width="949" Background="Transparent"/>
-            <Button Grid.Row="2" Content="Verify" Foreground="White" BorderBrush="Transparent" Click="Verification_Click" Margin="365,253.571,364,184.143" FontSize="40" Width="271"  Height="100" RenderTransformOrigin="1.07,0.377"/>
-            <ComboBox x:Name="comboBox" Grid.Column="1" HorizontalAlignment="Left" Margin="398.286,6.286,0,0" Grid.Row="3" VerticalAlignment="Top" Width="187" Visibility="Hidden"/>
-            <Button x:Name="manageButton" Content="Manage" Foreground="White" BorderBrush="Transparent"  Height="Auto" Margin="1251,-15,-503,614.429" FontSize="40" Grid.RowSpan="2" Click="manageButton_Click"/>
-            <Wpf:WebCameraControl  x:Name="webCameraControl" HorizontalAlignment="Left" Margin="18,44.286,0,0" VerticalAlignment="Top" Height="761" Grid.Row="1" Width="931" Grid.RowSpan="2" BorderBrush="White"/>
+            <TextBox x:Name="_logTextBox" HorizontalAlignment="Center" Height="154" Margin="-11,373,62,-0.6" Grid.Row="2" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" IsReadOnly="True" VerticalAlignment="Top" Width="949" Background="Transparent"/>
+            <Button Grid.Row="2" Content="Verify" Foreground="White" BorderBrush="Transparent" Click="Verification_Click" Margin="365,253,220,184.4" FontSize="40"  Height="Auto" RenderTransformOrigin="1.07,0.377"/>
+            <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="398,5,0,0" Grid.Row="2" VerticalAlignment="Top" Width="187" Visibility="Hidden"/>
+            <Button x:Name="manageButton" Content="Manage" Foreground="White" BorderBrush="Transparent"  Height="Auto" Margin="251,-11,-443,615" FontSize="40" Grid.RowSpan="2" Click="manageButton_Click" Grid.Column="1"/>
+            <Wpf:WebCameraControl  x:Name="webCameraControl" HorizontalAlignment="Left" Margin="43,207.2,0,0" VerticalAlignment="Top" Height="490" Grid.Row="1" Width="558" BorderBrush="White" Grid.RowSpan="2"/>
+            <Image x:Name="shotImage"     HorizontalAlignment="Left" Height="463" Margin="643,234.2,-218,0" Grid.Row="1" VerticalAlignment="Top" Width="575" Grid.ColumnSpan="2" Grid.RowSpan="2"/>
         </Grid>
     </Viewbox>
 </Window>
