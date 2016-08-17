@@ -19,6 +19,7 @@ using Windows.Storage.Streams;
 using Windows.Media.MediaProperties;
 using Windows.Graphics.Imaging;
 using Windows.Storage.FileProperties;
+using Windows.Devices.Enumeration;
 
 namespace Bounce.Views
 {
@@ -49,7 +50,9 @@ namespace Bounce.Views
             {
 
                 _mediaCapture = new MediaCapture();
-                await _mediaCapture.InitializeAsync();
+                var cameraDevice = await GetVideoProfileSupportedDeviceIdAsync(Windows.Devices.Enumeration.Panel.Back);
+                var mediaInitSettings = new MediaCaptureInitializationSettings { VideoDeviceId = cameraDevice };
+                await _mediaCapture.InitializeAsync(mediaInitSettings);
 
                 PreviewControl.Source = _mediaCapture;
                 await _mediaCapture.StartPreviewAsync();
@@ -67,6 +70,27 @@ namespace Bounce.Views
             {
                 System.Diagnostics.Debug.WriteLine("MediaCapture initialization failed. {0}", ex.Message);
             }
+        }
+
+        public async Task<string> GetVideoProfileSupportedDeviceIdAsync(Windows.Devices.Enumeration.Panel panel)
+        {
+            string deviceId = string.Empty;
+
+            // Finds all video capture devices
+            DeviceInformationCollection devices = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
+
+            foreach (var device in devices)
+            {
+                // Check if the device on the requested panel supports Video Profile
+                if (device.EnclosureLocation.Panel == panel)
+                {
+                    // We've located a device that supports Video Profiles on expected panel
+                    deviceId = device.Id;
+                    break;
+                }
+            }
+
+            return deviceId;
         }
 
         private async void verifyButton_Click(object sender, RoutedEventArgs e)
