@@ -100,6 +100,7 @@
     <Compile Include="Models\PersonGroupResult.cs" />
     <Compile Include="Models\StorageSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\AuthenticationHelper.cs" />
     <Compile Include="Services\AzureUtil.cs" />
     <Compile Include="Services\CognitiveTrainingService.cs" />
     <Compile Include="Services\SettingsServices\SettingsService.cs" />

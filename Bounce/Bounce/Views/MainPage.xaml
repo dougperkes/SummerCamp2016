@@ -103,14 +103,16 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
                 <Image x:Name="image" HorizontalAlignment="Center" Height="200"  VerticalAlignment="Top" Width="1000" Source="Assets/VizAccessLogo.png"/>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <CaptureElement Name="PreviewControl" Stretch="UniformToFill"/>
+                
+                <Image x:Name="ShotImage" Stretch="UniformToFill" Grid.Column="1" />
             </Grid>
-            <CaptureElement Name="PreviewControl" Stretch="UniformToFill" Grid.Row="1"/>
 
             <StackPanel HorizontalAlignment="Center" Height="Auto" Grid.Row="2" VerticalAlignment="Top" Width="1000">
                 <Button x:Name="verifyButton" Content="Verify" HorizontalAlignment="Center" 

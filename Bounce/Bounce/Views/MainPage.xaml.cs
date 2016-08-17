@@ -20,6 +20,7 @@ using Windows.Media.MediaProperties;
 using Windows.Graphics.Imaging;
 using Windows.Storage.FileProperties;
 using Windows.Devices.Enumeration;
+using Windows.UI.Xaml.Media.Imaging;
 
 namespace Bounce.Views
 {
@@ -131,7 +132,7 @@ namespace Bounce.Views
                 Log("Unknown person. Let 'em in!");
             }
             await CheckForFace(file);
-
+            await ViewModel.UploadFile(file);
         }
 
         private async Task<bool> IdentifyUserInGroup(StorageFile imageToVerify, string groupId, string groupLabel, bool allowEntrance)
@@ -302,6 +303,69 @@ namespace Bounce.Views
                 }
             }
         }
+
+        /*
+        private async Task MarkFaces(string pickedImagePath)
+        {
+
+            Uri fileUri = new Uri(pickedImagePath);
+            BitmapImage bitmapSource = new BitmapImage();
+
+            bitmapSource.BeginInit();
+            bitmapSource.CacheOption = BitmapCacheOption.None;
+            bitmapSource.UriSource = fileUri;
+            bitmapSource.EndInit();
+            using (Stream imageFileStream = File.OpenRead(pickedImagePath))
+            {
+                //initialize service
+                var fileStream = File.OpenRead(pickedImagePath);
+                var faceServiceClient = new FaceServiceClient(subscriptionKey);
+                var faces = await faceServiceClient.DetectAsync(imageFileStream);
+                var faceRects = faces.Select(face => face.FaceRectangle);
+                var faces2 = faceRects.ToArray();
+
+
+
+
+
+                if (faces2.Length > 0)
+                {
+                    DrawingVisual visual = new DrawingVisual();
+                    DrawingContext drawingContext = visual.RenderOpen();
+                    drawingContext.DrawImage(bitmapSource,
+                        new Rect(0, 0, bitmapSource.Width, bitmapSource.Height));
+                    double dpi = bitmapSource.DpiX;
+                    double resizeFactor = 96 / dpi;
+
+                    foreach (var faceRect in faces2)
+                    {
+                        drawingContext.DrawRectangle(
+                            Brushes.Transparent,
+                            new Pen(Brushes.Red, 2),
+                            new Rect(
+                                faceRect.Left * resizeFactor,
+                                faceRect.Top * resizeFactor,
+                                faceRect.Width * resizeFactor,
+                                faceRect.Height * resizeFactor
+                                )
+                        );
+                    }
+
+                    drawingContext.Close();
+                    RenderTargetBitmap faceWithRectBitmap = new RenderTargetBitmap(
+                        (int)(bitmapSource.PixelWidth * resizeFactor),
+                        (int)(bitmapSource.PixelHeight * resizeFactor),
+                        96,
+                        96,
+                        PixelFormats.Pbgra32);
+
+                    faceWithRectBitmap.Render(visual);
+                    shotImage.Source = faceWithRectBitmap;
+                }
+
+            }
+        }
+        */
 
         private ObservableCollection<Face> _foundFaceCollection = new ObservableCollection<Face>();
         public ObservableCollection<Face> FoundFaceCollection

@@ -6,6 +6,8 @@
 
     <Application.Resources>
         <ResourceDictionary Source="Styles\Custom.xaml" />
+        <!--<x:String x:Key="ida:ClientID">a0be1dc6-10b6-4ff2-a947-fcd830f383d5</x:String>-->
+        <!--<x:String x:Key="ida:ReturnUrl">urn:ietf:wg:oauth:2.0:oob</x:String>-->
     </Application.Resources>
 
 </common:BootStrapper>

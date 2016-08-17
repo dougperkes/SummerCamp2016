@@ -1,5 +1,6 @@
 ﻿{
   "dependencies": {
+    "Microsoft.Identity.Client": "1.0.304142221-alpha",
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.1.0",
     "Microsoft.ProjectOxford.Face": "1.1.0",
     "Microsoft.Xaml.Behaviors.Uwp.Managed": "1.1.0",
