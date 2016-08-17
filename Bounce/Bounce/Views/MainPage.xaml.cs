@@ -21,6 +21,15 @@ using Windows.Graphics.Imaging;
 using Windows.Storage.FileProperties;
 using Windows.Devices.Enumeration;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.Media.Core;
+using Windows.UI.Core;
+using System.Collections.Generic;
+using Windows.Media.FaceAnalysis;
+using Windows.UI.Xaml.Shapes;
+using Windows.UI.Xaml.Media;
+using Windows.UI;
+using Windows.Devices.Sensors;
+using Windows.Graphics.Display;
 
 namespace Bounce.Views
 {
@@ -30,6 +39,13 @@ namespace Bounce.Views
         MediaCapture _mediaCapture;
         bool _isPreviewing;
         DisplayRequest _displayRequest;
+        private IMediaEncodingProperties _previewProperties;
+        private SimpleOrientation _deviceOrientation = SimpleOrientation.NotRotated;
+        private DisplayOrientations _displayOrientation = DisplayOrientations.Portrait;
+        // Information about the camera device
+        private bool _mirroringPreview;
+        private bool _externalCamera;
+
 
         public MainPage()
         {
@@ -60,6 +76,8 @@ namespace Bounce.Views
                 _isPreviewing = true;
 
                 _displayRequest.RequestActive();
+
+                await CreateFaceDetectionEffectAsync();
                 //DisplayInformation.AutoRotationPreferences = DisplayOrientations.Landscape;
             }
             catch (UnauthorizedAccessException)
@@ -401,6 +419,239 @@ namespace Bounce.Views
         {
             _logTextBox.Text = "";
         }
+
+        #region Face detection helpers
+
+        /// <summary>
+        /// Iterates over all detected faces, creating and adding Rectangles to the FacesCanvas as face bounding boxes
+        /// </summary>
+        /// <param name="faces">The list of detected faces from the FaceDetected event of the effect</param>
+        private void HighlightDetectedFaces(IReadOnlyList<DetectedFace> faces)
+        {
+            // Remove any existing rectangles from previous events
+            FacesCanvas.Children.Clear();
+
+            // For each detected face
+            for (int i = 0; i < faces.Count; i++)
+            {
+                // Face coordinate units are preview resolution pixels, which can be a different scale from our display resolution, so a conversion may be necessary
+                Rectangle faceBoundingBox = ConvertPreviewToUiRectangle(faces[i].FaceBox);
+
+                // Set bounding box stroke properties
+                faceBoundingBox.StrokeThickness = 2;
+
+                // Highlight the first face in the set
+                faceBoundingBox.Stroke = (i == 0 ? new SolidColorBrush(Colors.Blue) : new SolidColorBrush(Colors.DeepSkyBlue));
+
+                // Add grid to canvas containing all face UI objects
+                FacesCanvas.Children.Add(faceBoundingBox);
+            }
+
+            // Update the face detection bounding box canvas orientation
+            SetFacesCanvasRotation();
+        }
+
+        /// <summary>
+        /// Takes face information defined in preview coordinates and returns one in UI coordinates, taking
+        /// into account the position and size of the preview control.
+        /// </summary>
+        /// <param name="faceBoxInPreviewCoordinates">Face coordinates as retried from the FaceBox property of a DetectedFace, in preview coordinates.</param>
+        /// <returns>Rectangle in UI (CaptureElement) coordinates, to be used in a Canvas control.</returns>
+        private Rectangle ConvertPreviewToUiRectangle(BitmapBounds faceBoxInPreviewCoordinates)
+        {
+            var result = new Rectangle();
+            var previewStream = _previewProperties as VideoEncodingProperties;
+
+            // If there is no available information about the preview, return an empty rectangle, as re-scaling to the screen coordinates will be impossible
+            if (previewStream == null) return result;
+
+            // Similarly, if any of the dimensions is zero (which would only happen in an error case) return an empty rectangle
+            if (previewStream.Width == 0 || previewStream.Height == 0) return result;
+
+            double streamWidth = previewStream.Width;
+            double streamHeight = previewStream.Height;
+
+            // For portrait orientations, the width and height need to be swapped
+            if (_displayOrientation == DisplayOrientations.Portrait || _displayOrientation == DisplayOrientations.PortraitFlipped)
+            {
+                streamHeight = previewStream.Width;
+                streamWidth = previewStream.Height;
+            }
+
+            // Get the rectangle that is occupied by the actual video feed
+            var previewInUI = GetPreviewStreamRectInControl(previewStream, PreviewControl);
+
+            // Scale the width and height from preview stream coordinates to window coordinates
+            result.Width = (faceBoxInPreviewCoordinates.Width / streamWidth) * previewInUI.Width;
+            result.Height = (faceBoxInPreviewCoordinates.Height / streamHeight) * previewInUI.Height;
+
+            // Scale the X and Y coordinates from preview stream coordinates to window coordinates
+            var x = (faceBoxInPreviewCoordinates.X / streamWidth) * previewInUI.Width;
+            var y = (faceBoxInPreviewCoordinates.Y / streamHeight) * previewInUI.Height;
+            Canvas.SetLeft(result, x);
+            Canvas.SetTop(result, y);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculates the size and location of the rectangle that contains the preview stream within the preview control, when the scaling mode is Uniform
+        /// </summary>
+        /// <param name="previewResolution">The resolution at which the preview is running</param>
+        /// <param name="previewControl">The control that is displaying the preview using Uniform as the scaling mode</param>
+        /// <returns></returns>
+        public Rect GetPreviewStreamRectInControl(VideoEncodingProperties previewResolution, CaptureElement previewControl)
+        {
+            var result = new Rect();
+
+            // In case this function is called before everything is initialized correctly, return an empty result
+            if (previewControl == null || previewControl.ActualHeight < 1 || previewControl.ActualWidth < 1 ||
+                previewResolution == null || previewResolution.Height == 0 || previewResolution.Width == 0)
+            {
+                return result;
+            }
+
+            var streamWidth = previewResolution.Width;
+            var streamHeight = previewResolution.Height;
+
+            // For portrait orientations, the width and height need to be swapped
+            if (_displayOrientation == DisplayOrientations.Portrait || _displayOrientation == DisplayOrientations.PortraitFlipped)
+            {
+                streamWidth = previewResolution.Height;
+                streamHeight = previewResolution.Width;
+            }
+
+            // Start by assuming the preview display area in the control spans the entire width and height both (this is corrected in the next if for the necessary dimension)
+            result.Width = previewControl.ActualWidth;
+            result.Height = previewControl.ActualHeight;
+
+            // If UI is "wider" than preview, letterboxing will be on the sides
+            if ((previewControl.ActualWidth / previewControl.ActualHeight > streamWidth / (double)streamHeight))
+            {
+                var scale = previewControl.ActualHeight / streamHeight;
+                var scaledWidth = streamWidth * scale;
+
+                result.X = (previewControl.ActualWidth - scaledWidth) / 2.0;
+                result.Width = scaledWidth;
+            }
+            else // Preview stream is "wider" than UI, so letterboxing will be on the top+bottom
+            {
+                var scale = previewControl.ActualWidth / streamWidth;
+                var scaledHeight = streamHeight * scale;
+
+                result.Y = (previewControl.ActualHeight - scaledHeight) / 2.0;
+                result.Height = scaledHeight;
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        private FaceDetectionEffect _faceDetectionEffect;
+
+        /// <summary>
+        /// Adds face detection to the preview stream, registers for its events, enables it, and gets the FaceDetectionEffect instance
+        /// </summary>
+        /// <returns></returns>
+        private async Task CreateFaceDetectionEffectAsync()
+        {
+            // Create the definition, which will contain some initialization settings
+            var definition = new FaceDetectionEffectDefinition();
+
+            // To ensure preview smoothness, do not delay incoming samples
+            definition.SynchronousDetectionEnabled = false;
+
+            // In this scenario, choose detection speed over accuracy
+            definition.DetectionMode = FaceDetectionMode.HighPerformance;
+
+            // Add the effect to the preview stream
+            _faceDetectionEffect = (FaceDetectionEffect)await _mediaCapture.AddVideoEffectAsync(definition, MediaStreamType.VideoPreview);
+
+            // Register for face detection events
+            _faceDetectionEffect.FaceDetected += FaceDetectionEffect_FaceDetected;
+
+            // Choose the shortest interval between detection events
+            _faceDetectionEffect.DesiredDetectionInterval = TimeSpan.FromMilliseconds(33);
+
+            // Start detecting faces
+            _faceDetectionEffect.Enabled = true;
+        }
+
+
+        private async void FaceDetectionEffect_FaceDetected(FaceDetectionEffect sender, FaceDetectedEventArgs args)
+        {
+            // Ask the UI thread to render the face bounding boxes
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => HighlightDetectedFaces(args.ResultFrame.DetectedFaces));
+        }
+
+
+        /// <summary>
+        /// Uses the current display orientation to calculate the rotation transformation to apply to the face detection bounding box canvas
+        /// and mirrors it if the preview is being mirrored
+        /// </summary>
+        private void SetFacesCanvasRotation()
+        {
+            // Calculate how much to rotate the canvas
+            int rotationDegrees = ConvertDisplayOrientationToDegrees(_displayOrientation);
+
+            // The rotation direction needs to be inverted if the preview is being mirrored, just like in SetPreviewRotationAsync
+            if (_mirroringPreview)
+            {
+                rotationDegrees = (360 - rotationDegrees) % 360;
+            }
+
+            // Apply the rotation
+            var transform = new RotateTransform { Angle = rotationDegrees };
+            FacesCanvas.RenderTransform = transform;
+
+            var previewArea = GetPreviewStreamRectInControl(_previewProperties as VideoEncodingProperties, PreviewControl);
+
+            // For portrait mode orientations, swap the width and height of the canvas after the rotation, so the control continues to overlap the preview
+            if (_displayOrientation == DisplayOrientations.Portrait || _displayOrientation == DisplayOrientations.PortraitFlipped)
+            {
+                FacesCanvas.Width = previewArea.Height;
+                FacesCanvas.Height = previewArea.Width;
+
+                // The position of the canvas also needs to be adjusted, as the size adjustment affects the centering of the control
+                Canvas.SetLeft(FacesCanvas, previewArea.X - (previewArea.Height - previewArea.Width) / 2);
+                Canvas.SetTop(FacesCanvas, previewArea.Y - (previewArea.Width - previewArea.Height) / 2);
+            }
+            else
+            {
+                FacesCanvas.Width = previewArea.Width;
+                FacesCanvas.Height = previewArea.Height;
+
+                Canvas.SetLeft(FacesCanvas, previewArea.X);
+                Canvas.SetTop(FacesCanvas, previewArea.Y);
+            }
+
+            // Also mirror the canvas if the preview is being mirrored
+            FacesCanvas.FlowDirection = _mirroringPreview ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        }
+
+
+        /// <summary>
+        /// Converts the given orientation of the app on the screen to the corresponding rotation in degrees
+        /// </summary>
+        /// <param name="orientation">The orientation of the app on the screen</param>
+        /// <returns>An orientation in degrees</returns>
+        private static int ConvertDisplayOrientationToDegrees(DisplayOrientations orientation)
+        {
+            switch (orientation)
+            {
+                case DisplayOrientations.Portrait:
+                    return 90;
+                case DisplayOrientations.LandscapeFlipped:
+                    return 180;
+                case DisplayOrientations.PortraitFlipped:
+                    return 270;
+                case DisplayOrientations.Landscape:
+                default:
+                    return 0;
+            }
+        }
+
 
     }
 }
