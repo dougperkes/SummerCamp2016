@@ -24,7 +24,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <!--  TODO: change properties for narrow view  -->
-                        <Setter Target="stateTextBox.Text" Value="Narrow Visual State" />
+                        <!--<Setter Target="stateTextBox.Text" Value="Narrow Visual State" />-->
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="VisualStateNormal">
@@ -33,7 +33,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <!--  TODO: change properties for normal view  -->
-                        <Setter Target="stateTextBox.Text" Value="Normal Visual State" />
+                        <!--<Setter Target="stateTextBox.Text" Value="Normal Visual State" />-->
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="VisualStateWide">
@@ -42,7 +42,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <!--  TODO: change properties for wide view  -->
-                        <Setter Target="stateTextBox.Text" Value="Wide Visual State" />
+                        <!--<Setter Target="stateTextBox.Text" Value="Wide Visual State" />-->
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -83,46 +83,37 @@
 
         </controls:Resizer>
 
-        <Button x:Name="submitButton"
-                Click="{x:Bind ViewModel.GotoDetailsPage}" Content="Submit"
-                RelativePanel.AlignBottomWith="parameterResizer"
-                RelativePanel.RightOf="parameterResizer" />
+        <Grid x:Name="mainGrid" RelativePanel.Below="pageHeader" Width="Auto">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-        <TextBlock x:Name="stateTextBox" Margin="16,16,0,0"
-                   RelativePanel.AlignLeftWith="parameterResizer"
-                   RelativePanel.Below="parameterResizer"
-                   Text="Current Visual State" />
+            <Image x:Name="image" HorizontalAlignment="Center" Height="200" 
+                       VerticalAlignment="Top" Width="Auto" 
+               Source="ms-appx:///Assets/SplashScreen.png" 
+               
+               />
 
-        <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-            <!--<Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>-->
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-                <Image x:Name="image" HorizontalAlignment="Center" Height="200"  VerticalAlignment="Top" Width="1000" Source="Assets/VizAccessLogo.png"/>
-            <Grid Grid.Row="1">
-                <CaptureElement Name="PreviewControl" Stretch="UniformToFill"/>
-                <Canvas>
-                    <!--Canvas that will host the face detection bounding boxes, will share the same bounds as the preview within the CaptureElement-->
-                    <!--It's contained inside of another canvas to allow for adjusting its size and position after applying a RenderTransform -->
-                    <!--For more details, see SetFacesCanvasRotation-->
-                    <Canvas Name="FacesCanvas" RenderTransformOrigin="0.5,0.5"/>
-                </Canvas>
+            <TextBox x:Name="_logTextBox" FontSize="24" TextWrapping="Wrap" Text="" 
+                        Grid.Column="1"  Margin="5,5,5,5"
+                 Width="800" Height="200"  />
 
-            </Grid>
+            <Button x:Name="verifyButton" Content="Verify" HorizontalAlignment="Right" 
+                    Grid.Column="2" VerticalAlignment="Center" Margin="5,5,5,5" FontSize="120" Click="verifyButton_Click" 
+                    Background="{ThemeResource ButtonBackgroundThemeBrush}"/>
 
-            <StackPanel HorizontalAlignment="Center" Height="Auto" Grid.Row="2" VerticalAlignment="Top" Width="1000">
-                <Button x:Name="verifyButton" Content="Verify" HorizontalAlignment="Center" 
-                    VerticalAlignment="Top" FontSize="60" Click="verifyButton_Click"/>
-                <TextBlock x:Name="_logTextBox" TextWrapping="Wrap" Text="TextBlock" Height="300"/>
-
-            </StackPanel>
         </Grid>
 
+        <CaptureElement RelativePanel.Below="mainGrid" Name="PreviewControl" Stretch="UniformToFill"
+                        />
+        <Grid x:Name="vipBox" Background="#FF09F829" Visibility="Collapsed" RelativePanel.Below="mainGrid" Width="Auto">
+            <Image Source="ms-appx:///Assets/VIPText.png" Width="Auto" />
+        </Grid>
+        <Grid x:Name="bannedBox" Background="#FFF87009" Visibility="Collapsed" RelativePanel.Below="mainGrid" Width="Auto">
+            <Image Source="ms-appx:///Assets/BannedText.png" Width="Auto" />
+        </Grid>
     </RelativePanel>
 </Page>
 

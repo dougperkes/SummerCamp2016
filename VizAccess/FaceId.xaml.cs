@@ -34,7 +34,7 @@ namespace VizAccess
             InitializeComponent();
         }
 
-        private ObservableCollection<Person> _persons = new ObservableCollection<Person>();
+        private static ObservableCollection<Person> _persons = new ObservableCollection<Person>();
 
         /// <summary>
         /// Gets person database

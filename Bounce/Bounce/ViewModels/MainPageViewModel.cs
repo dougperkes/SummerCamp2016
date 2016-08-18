@@ -32,7 +32,7 @@ namespace Bounce.ViewModels
             var token = await AuthenticationHelper.GetTokenForUserAsync();
             client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
             var dateString = DateTime.UtcNow.ToString("yyyy-dd-M--HH-mm-ss");
-            Uri uploadEndpoint = new Uri(serviceEndpoint + "/me/drive/root/children/" + dateString + ".jpg/content");
+            Uri uploadEndpoint = new Uri(serviceEndpoint + "/me/drive/special/approot/children/" + dateString + ".jpg/content");
 
             using (var content = new StreamContent((await file.OpenAsync(FileAccessMode.Read)).AsStream()))
             {
